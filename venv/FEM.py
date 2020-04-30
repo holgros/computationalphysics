@@ -6,9 +6,9 @@ TASK 1
 '''
 print('Starting task 1')
 # input parameters - change as appropriate
-r_min = 0.0 		         # lower range limit
-r_max = 5.0 		         # upper range limit, should be larger than r_min
-h = 0.01 			         # step, should be small compared to r_max-r_min
+r_min = 0.0 		            # lower range limit
+r_max = 5.0 		            # upper range limit, should be larger than r_min
+h = 0.01 			            # step, should be small compared to r_max-r_min
 r = np.arange(r_min, r_max, h)  # array of r
 
 # calculate discretization of u0
@@ -31,11 +31,11 @@ f = 4*r*e^-2r
 f = 4*r*np.exp(-2*r)
 r = r[1:n - 1]  # remove first and last elements
 def getHartree(f_in, r_vec):
-    b = np.zeros(len(f_in) - 2)  # initialize b
+    b = np.zeros(len(f_in) - 2)     # initialize b
     for i in range(len(f_in) - 2):  # calculate b, see eq.45
         b[i] = (h / 6) * (f_in[i] + 4 * f_in[i + 1] + f_in[i + 2])
     A_copy = A
-    while len(A_copy[0]) > len(b): # in task 4 we need to have the same dimensions
+    while len(A_copy[0]) > len(b):
         A_copy = np.delete(A_copy, slice(1), 0) # slice first row
         A_copy = np.delete(A_copy, slice(1), 1)  # slice first row
     A_inv = np.linalg.inv(A_copy)  # invert A
@@ -150,6 +150,8 @@ print('Starting task 4')
 # input from previous tasks
 Q_0 = Q.copy()
 u_0 = eig[index_min]
+Vh = 1 / r[1:-1] - (1 + 1 / r[1:-1]) * np.exp(-2 * r[1:-1])
+epsilon_old = lam[index_min]/2
 
 # parameters
 params = {'A': 0.0311,
@@ -160,20 +162,28 @@ params = {'A': 0.0311,
           'beta_1': 1.0529,
           'beta_2': 0.3334}
 
+# loop until eigenvalue converges
 nbr_loops = 0
-while nbr_loops < 10:
+convergence = False                 # condition that abs(1-epsilon_new/epsilon_old) < conv_ratio
+conv_ratio = 0.000001               # 10^-6 requires about 13 loops
+while not convergence:
     # update wavefunction with limit values
-    u_0 = np.insert(u_0, 0, 0.0)      # insert 0.0 at beginning
-    u_0 = np.append(u_0, 0.0)         # ... and 0.0 at end
+    u_0 = np.insert(u_0, 0, 0.0)            # insert 0.0 at beginning
+    u_0 = np.append(u_0, 0.0)               # insert 0.0 at end
 
+    '''
     # get Vh
-    b = np.zeros(len(u_0) - 2)  # initialize b
-    for i in range(len(b)):  # calculate b, see eq.45
+    b = np.zeros(len(u_0))                  # initialize b
+    for i in range(len(b)-2):               # calculate b, see eq.45
         b[i] = (h / 6) * (u_0[i] + 4 * u_0[i + 1] + u_0[i + 2])
-    A_inv = np.linalg.inv(A)  # invert A
-    Vh = np.dot(A_inv, b)  # solve Poisson equation
-    Vh = Vh + np.divide(r[1:-1], r_max)  # ... calculate corresponding wavefunction for single orbital
-    Vh = np.divide(Vh, r[1:-1])  # ... and get Hartree potential
+    # append approximations at the end where u_0 is approximately zero
+    b[-2] = (h / 6) * (u_0[-2] + 4 * u_0[-1])
+    b[-1] = (h / 6) * u_0[-1]
+    A_inv = np.linalg.inv(A)                # invert A
+    Vh = np.dot(A_inv, b[1:-1])             # solve Poisson equation
+    Vh = Vh + np.divide(r[1:-1], r_max)     # calculate corresponding wavefunction for single orbital
+    Vh = np.divide(Vh, r[1:-1])             # get Hartree potential
+    '''
 
     # get densities
     n_densities = []
@@ -203,8 +213,8 @@ while nbr_loops < 10:
             Vc.append(params['gamma'] * nominator / denominator)
 
     # calculate matrix Q
-    Q = Q_0.copy()           # first term copied from task 3
-    V_tot = Vh+Vx+Vc        # total potential
+    Q = Q_0.copy()      # first term copied from task 3
+    V_tot = Vh+Vx+Vc    # total potential
     for i in range(len(V_tot)):
         for j in range(len(V_tot)):
             # take care of two limit cases by assigning V_tot[-1]=V_tot[0] and V_tot[r_max+1]=V_tot[r_max]
@@ -217,7 +227,7 @@ while nbr_loops < 10:
                 Q[i][j] += (h/6)*(V_tot[i-1]+2*V_tot[i]+V_tot[i+1])
             elif np.abs(i-j) == 1:
                 Q[i][j] += (h/12)*(V_tot[i]+V_tot[j])
-    Q = 2*Q                 # note multiplication with 2
+    Q = 2*Q             # note multiplication with 2
 
     # repeat procedure from task 3
     A_plus_Q = A+Q
@@ -234,96 +244,30 @@ while nbr_loops < 10:
             sum += term
         eigvecs[i] /= sum
 
-    # calculate energies
-    energies = []
-    for i in range(len(eigvals)):
-        # update copy of wavefunction with limit values
-        wavefctn = eigvecs[i].copy()
-        wavefctn = np.insert(wavefctn, 0, 0.0)  # insert 0.0 at beginning
-        wavefctn = np.append(wavefctn, 0.0)  # ... and 0.0 at end
-        energies.append(eigvals[i])     # first term is 2*epsilon = eigenvalue of the solution above
-        # get Vh - same as above
-        b = np.zeros(len(wavefctn) - 2)  # initialize b
-        for j in range(len(b)):  # calculate b, see eq.45
-            b[j] = (h / 6) * (wavefctn[j] + 4 * wavefctn[j + 1] + wavefctn[j + 2])
-        A_inv = np.linalg.inv(A)  # invert A
-        Vh = np.dot(A_inv, b)  # solve Poisson equation
-        Vh = Vh + np.divide(r[1:-1], r_max)  # ... calculate corresponding wavefunction for single orbital
-        Vh = np.divide(Vh, r[1:-1])          # ... and get Hartree potential
-        # get densities - same as above
-        n_densities = []
-        for j in range(0, len(wavefctn)-1):
-            n_densities.append((np.abs(wavefctn[j] / r[j+1]) ** 2) / (2 * np.pi))
-        n_densities.append(0.0)
-        # add the Vh term to the energy
-        Vh_term = 0
-        for j in range(len(n_densities[1:-1])):
-            term = h * n_densities[j] * Vh[j]
-            Vh_term += term
-        energies[i] -= 0.5*Vh_term          # note minus sign!
-        # get the Exc term and add to the energy
-        Exc_term = 0.0
-        for n in n_densities:  # calculating integral of n*epsilon_x
-            term = h * n * (-3 / 4) * ((3 / np.pi) ** (1 / 3)) * n ** (1 / 3)
-            Exc_term += term
-        for n in n_densities:  # calculating integral of n*epsilon_c
-            epsilon_c = 0.0
-            if n > 3 / (4 * np.pi):
-                term1 = (params['A'] / 3) * np.log(3 / (4 * np.pi * n))
-                term2 = params['B']
-                term3 = (1 / 3) * params['C'] * (3 / 4 * np.pi * n) ** (1 / 3) * np.log(3 / 4 * np.pi * n)
-                term4 = params['D'] * (3 / (4 * np.pi * n)) ** (1 / 3)
-                epsilon_c = term1 + term2 + term3 + term4
-            else:
-                epsilon_c = params['gamma'] / (1 + params['beta_1'] * (3 / 4 * np.pi * n) ** (1 / 6) + params['beta_2'] * (
-                            3 / 4 * np.pi * n) ** (1 / 3))
-            term = h * n * epsilon_c
-            Exc_term += term
-        energies[i] += Exc_term
-        # get the Vxc energy term and add to the energy
-        # get Vx - same as above
-        Vx = []
-        for j in range(0, len(n_densities)):
-            Vx.append(-(3 * n_densities[j] / np.pi) ** (1 / 3))
-        # get Vc - same as above
-        Vc = []
-        for j in range(0, len(n_densities)):
-            if n_densities[j] > 3 / (4 * np.pi):
-                term1 = (params['A'] / 3) * np.log(3 / (4 * np.pi * n_densities[j]))
-                term2 = params['B']
-                term3 = -params['A'] / 3
-                term4 = (2 / 9) * params['C'] * (3 / 4 * np.pi * n_densities[j]) ** (1 / 3) * np.log(
-                    3 / 4 * np.pi * n_densities[j])
-                term5 = ((2 * params['D'] - params['C']) / 3) * (3 / (4 * np.pi * n_densities[j])) ** (1 / 3)
-                Vc.append(term1 + term2 + term3 + term4 + term5)
-            else:
-                if n_densities[j] == 0:         # limiting case
-                    Vc.append(0.0)
-                    continue
-                nominator = 1 + (7 / 6) * params['beta_1'] * (3 / (4 * np.pi * n_densities[j])) ** (1 / 6) + params[
-                    'beta_2'] * (
-                                    3 / (4 * np.pi * n_densities[j])) ** (1 / 3)
-                denominator = (1 + params['beta_1'] * (3 / 4 * np.pi * n_densities[j]) ** (1 / 6) + params['beta_2'] * (
-                        3 / (4 * np.pi * n_densities[j])) ** (1 / 3)) ** 2
-                Vc.append(params['gamma'] * nominator / denominator)
-        # calculate the Vxc term
-        Vxc = Vx+Vc
-        Vxc_term = 0.0
-        for j in range(len(n_densities)):
-            term = h * n_densities[j] * Vxc[j]
-            Vxc_term -= term  # note minus sign!
-        energies[i] += Vxc_term
-
     # get index of minimum energy and reset u_0 as the corresponding wavefunction
-    index_min = np.argmin(energies)
+    index_min = np.argmin(eigvals)
     u_0 = eigvecs[index_min]
+    epsilon_new = eigvals[index_min]/2
 
+    # print to debug and track process
     nbr_loops += 1
-    print('After', nbr_loops, 'loops:')
-    print('Ground state energy =', energies[index_min])
-    print('index_min:',index_min)
-    print('index of smallest eigenvalue:',np.argmin(eigvals))
-    print('--')
+    print('After', nbr_loops, 'loops:\t\tindex_min=',index_min, '\t\tEPSILON =', epsilon_new)
+    '''
+    print('\tnp.abs(1 - epsilon_new / epsilon_old):', np.abs(1 - epsilon_new / epsilon_old))
+    print('\tn_densities:', n_densities)
+    print('\tVh:', np.ndarray.tolist(Vh))
+    print('\tVx:',Vx)
+    print('\tVc:',Vc)
+    print('\tV_tot:',np.ndarray.tolist(V_tot))
+    print('\tQ[0]:', np.ndarray.tolist(Q[0]))
+    print('\tQ[-1]:', np.ndarray.tolist(Q[-1]))
+    print('\tA_plus_Q[0]:',np.ndarray.tolist(A_plus_Q[0]))
+    print('\tA_plus_Q[-1]:',np.ndarray.tolist(A_plus_Q[-1]))
+    print('\tNormalization factor:', sum)
+    '''
+    if np.abs(1 - epsilon_new / epsilon_old) < conv_ratio:
+        convergence = True
+    epsilon_old = epsilon_new
 
 # plot wavefunction
 plt.plot(r[1:-1], u_0, 'ro', markersize=0.2, label='Wavefunction')
@@ -334,3 +278,157 @@ plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
            ncol=2, mode="expand", borderaxespad=0.)
 plt.savefig("4-wavefunction.png")
 plt.clf()
+
+# calculate ground state energy
+# update copy of wavefunction with limit values
+wavefctn = u_0.copy()
+wavefctn = np.insert(wavefctn, 0, 0.0)  # insert 0.0 at beginning
+wavefctn = np.append(wavefctn, 0.0)  # ... and 0.0 at end
+energy = eigvals[index_min]          # first term is 2*epsilon = eigenvalue of the solution above
+# get densities - same as above
+n_densities = []
+for j in range(0, len(wavefctn)-1):
+    n_densities.append((np.abs(wavefctn[j] / r[j+1]) ** 2) / (2 * np.pi))
+n_densities.append(0.0)
+# add the Vh term to the energy
+Vh_term = 0
+for j in range(len(n_densities[1:-1])):
+    term = h * n_densities[j] * Vh[j]
+    Vh_term += term
+energy -= 0.5*Vh_term          # note minus sign!
+# get the Exc term and add to the energy
+Exc_term = 0.0
+for n in n_densities:  # calculating integral of n*epsilon_x
+    term = h * n * (-3 / 4) * ((3 / np.pi) ** (1 / 3)) * n ** (1 / 3)
+    Exc_term += term
+for n in n_densities:  # calculating integral of n*epsilon_c
+    epsilon_c = 0.0
+    if n > 3 / (4 * np.pi):
+        term1 = (params['A'] / 3) * np.log(3 / (4 * np.pi * n))
+        term2 = params['B']
+        term3 = (1 / 3) * params['C'] * (3 / 4 * np.pi * n) ** (1 / 3) * np.log(3 / 4 * np.pi * n)
+        term4 = params['D'] * (3 / (4 * np.pi * n)) ** (1 / 3)
+        epsilon_c = term1 + term2 + term3 + term4
+    else:
+        epsilon_c = params['gamma'] / (1 + params['beta_1'] * (3 / 4 * np.pi * n) ** (1 / 6) + params['beta_2'] * (
+                    3 / 4 * np.pi * n) ** (1 / 3))
+    term = h * n * epsilon_c
+    Exc_term += term
+energy += Exc_term
+# get the Vxc energy term and add to the energy
+# get Vx - same as above
+Vx = []
+for j in range(0, len(n_densities)):
+    Vx.append(-(3 * n_densities[j] / np.pi) ** (1 / 3))
+# get Vc - same as above
+Vc = []
+for j in range(0, len(n_densities)):
+    if n_densities[j] > 3 / (4 * np.pi):
+        term1 = (params['A'] / 3) * np.log(3 / (4 * np.pi * n_densities[j]))
+        term2 = params['B']
+        term3 = -params['A'] / 3
+        term4 = (2 / 9) * params['C'] * (3 / 4 * np.pi * n_densities[j]) ** (1 / 3) * np.log(
+            3 / 4 * np.pi * n_densities[j])
+        term5 = ((2 * params['D'] - params['C']) / 3) * (3 / (4 * np.pi * n_densities[j])) ** (1 / 3)
+        Vc.append(term1 + term2 + term3 + term4 + term5)
+    else:
+        if n_densities[j] == 0:         # limiting case
+            Vc.append(0.0)
+            continue
+        nominator = 1 + (7 / 6) * params['beta_1'] * (3 / (4 * np.pi * n_densities[j])) ** (1 / 6) + params[
+            'beta_2'] * (
+                            3 / (4 * np.pi * n_densities[j])) ** (1 / 3)
+        denominator = (1 + params['beta_1'] * (3 / 4 * np.pi * n_densities[j]) ** (1 / 6) + params['beta_2'] * (
+                3 / (4 * np.pi * n_densities[j])) ** (1 / 3)) ** 2
+        Vc.append(params['gamma'] * nominator / denominator)
+# calculate the Vxc term
+Vxc = Vx+Vc
+Vxc_term = 0.0
+for j in range(len(n_densities)):
+    term = h * n_densities[j] * Vxc[j]
+    Vxc_term -= term  # note minus sign!
+energy += Vxc_term
+print('---TASK 4 OUTPUT---')
+print('Ground state energy of Helium:',energy)
+
+'''
+# calculate energies
+energies = []
+for i in range(len(eigvals)):
+    # update copy of wavefunction with limit values
+    wavefctn = eigvecs[i].copy()
+    wavefctn = np.insert(wavefctn, 0, 0.0)  # insert 0.0 at beginning
+    wavefctn = np.append(wavefctn, 0.0)  # ... and 0.0 at end
+    energies.append(eigvals[i])     # first term is 2*epsilon = eigenvalue of the solution above
+    # get Vh - same as above
+    b = np.zeros(len(wavefctn) - 2)  # initialize b
+    for j in range(len(b)):  # calculate b, see eq.45
+        b[j] = (h / 6) * (wavefctn[j] + 4 * wavefctn[j + 1] + wavefctn[j + 2])
+    A_inv = np.linalg.inv(A)  # invert A
+    Vh = np.dot(A_inv, b)  # solve Poisson equation
+    Vh = Vh + np.divide(r[1:-1], r_max)  # ... calculate corresponding wavefunction for single orbital
+    Vh = np.divide(Vh, r[1:-1])          # ... and get Hartree potential
+    # get densities - same as above
+    n_densities = []
+    for j in range(0, len(wavefctn)-1):
+        n_densities.append((np.abs(wavefctn[j] / r[j+1]) ** 2) / (2 * np.pi))
+    n_densities.append(0.0)
+    # add the Vh term to the energy
+    Vh_term = 0
+    for j in range(len(n_densities[1:-1])):
+        term = h * n_densities[j] * Vh[j]
+        Vh_term += term
+    energies[i] -= 0.5*Vh_term          # note minus sign!
+    # get the Exc term and add to the energy
+    Exc_term = 0.0
+    for n in n_densities:  # calculating integral of n*epsilon_x
+        term = h * n * (-3 / 4) * ((3 / np.pi) ** (1 / 3)) * n ** (1 / 3)
+        Exc_term += term
+    for n in n_densities:  # calculating integral of n*epsilon_c
+        epsilon_c = 0.0
+        if n > 3 / (4 * np.pi):
+            term1 = (params['A'] / 3) * np.log(3 / (4 * np.pi * n))
+            term2 = params['B']
+            term3 = (1 / 3) * params['C'] * (3 / 4 * np.pi * n) ** (1 / 3) * np.log(3 / 4 * np.pi * n)
+            term4 = params['D'] * (3 / (4 * np.pi * n)) ** (1 / 3)
+            epsilon_c = term1 + term2 + term3 + term4
+        else:
+            epsilon_c = params['gamma'] / (1 + params['beta_1'] * (3 / 4 * np.pi * n) ** (1 / 6) + params['beta_2'] * (
+                        3 / 4 * np.pi * n) ** (1 / 3))
+        term = h * n * epsilon_c
+        Exc_term += term
+    energies[i] += Exc_term
+    # get the Vxc energy term and add to the energy
+    # get Vx - same as above
+    Vx = []
+    for j in range(0, len(n_densities)):
+        Vx.append(-(3 * n_densities[j] / np.pi) ** (1 / 3))
+    # get Vc - same as above
+    Vc = []
+    for j in range(0, len(n_densities)):
+        if n_densities[j] > 3 / (4 * np.pi):
+            term1 = (params['A'] / 3) * np.log(3 / (4 * np.pi * n_densities[j]))
+            term2 = params['B']
+            term3 = -params['A'] / 3
+            term4 = (2 / 9) * params['C'] * (3 / 4 * np.pi * n_densities[j]) ** (1 / 3) * np.log(
+                3 / 4 * np.pi * n_densities[j])
+            term5 = ((2 * params['D'] - params['C']) / 3) * (3 / (4 * np.pi * n_densities[j])) ** (1 / 3)
+            Vc.append(term1 + term2 + term3 + term4 + term5)
+        else:
+            if n_densities[j] == 0:         # limiting case
+                Vc.append(0.0)
+                continue
+            nominator = 1 + (7 / 6) * params['beta_1'] * (3 / (4 * np.pi * n_densities[j])) ** (1 / 6) + params[
+                'beta_2'] * (
+                                3 / (4 * np.pi * n_densities[j])) ** (1 / 3)
+            denominator = (1 + params['beta_1'] * (3 / 4 * np.pi * n_densities[j]) ** (1 / 6) + params['beta_2'] * (
+                    3 / (4 * np.pi * n_densities[j])) ** (1 / 3)) ** 2
+            Vc.append(params['gamma'] * nominator / denominator)
+    # calculate the Vxc term
+    Vxc = Vx+Vc
+    Vxc_term = 0.0
+    for j in range(len(n_densities)):
+        term = h * n_densities[j] * Vxc[j]
+        Vxc_term -= term  # note minus sign!
+    energies[i] += Vxc_term
+'''
