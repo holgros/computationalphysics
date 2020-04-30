@@ -165,7 +165,7 @@ params = {'A': 0.0311,
 # loop until eigenvalue converges
 nbr_loops = 0
 convergence = False                 # condition that abs(1-epsilon_new/epsilon_old) < conv_ratio
-conv_ratio = 0.000001               # 10^-6 requires about 13 loops
+conv_ratio = 0.000001               # 10^-6 requires about 5 loops for h=0.01
 while not convergence:
     # update wavefunction with limit values
     u_0 = np.insert(u_0, 0, 0.0)            # insert 0.0 at beginning
@@ -236,6 +236,7 @@ while not convergence:
     eigvals, eigvecs = np.linalg.eig(H)  # get eigenvalues and eigenvectors
     eigvecs = np.transpose(eigvecs)      # the eig function returns eigenvalues arranged column-wise
 
+    '''
     # normalize wavefunctions
     for i in range(len(eigvecs)):
         sum = 0
@@ -243,6 +244,7 @@ while not convergence:
             term = h * y * y
             sum += term
         eigvecs[i] /= sum
+    '''
 
     # get index of minimum energy and reset u_0 as the corresponding wavefunction
     index_min = np.argmin(eigvals)
@@ -251,26 +253,30 @@ while not convergence:
 
     # print to debug and track process
     nbr_loops += 1
-    print('After', nbr_loops, 'loops:\t\tindex_min=',index_min, '\t\tEPSILON =', epsilon_new)
-    '''
-    print('\tnp.abs(1 - epsilon_new / epsilon_old):', np.abs(1 - epsilon_new / epsilon_old))
-    print('\tn_densities:', n_densities)
-    print('\tVh:', np.ndarray.tolist(Vh))
-    print('\tVx:',Vx)
-    print('\tVc:',Vc)
-    print('\tV_tot:',np.ndarray.tolist(V_tot))
-    print('\tQ[0]:', np.ndarray.tolist(Q[0]))
-    print('\tQ[-1]:', np.ndarray.tolist(Q[-1]))
-    print('\tA_plus_Q[0]:',np.ndarray.tolist(A_plus_Q[0]))
-    print('\tA_plus_Q[-1]:',np.ndarray.tolist(A_plus_Q[-1]))
-    print('\tNormalization factor:', sum)
-    '''
+    print('After', nbr_loops, 'loops:\t\tEPSILON =', epsilon_new)
+    #print('u_0:',np.ndarray.tolist(u_0))
+
+    # check convergence condition
     if np.abs(1 - epsilon_new / epsilon_old) < conv_ratio:
         convergence = True
     epsilon_old = epsilon_new
 
+# update copy of wavefunction with limit values
+wavefctn = u_0.copy()
+wavefctn = np.insert(wavefctn, 0, 0.0)  # insert 0.0 at beginning
+wavefctn = np.append(wavefctn, 0.0)     # ... and 0.0 at end
+
+'''
+# normalize wavefunction
+sum = 0
+for y in wavefctn:
+    term = h * y * y
+    sum += term
+wavefctn /= sum
+'''
+
 # plot wavefunction
-plt.plot(r[1:-1], u_0, 'ro', markersize=0.2, label='Wavefunction')
+plt.plot(r, wavefctn, 'ro', markersize=0.2, label='Wavefunction')
 plt.xlabel('r')
 plt.ylabel('u')
 plt.suptitle('FEM: Task 4 - helium ground state wavefunction')
@@ -280,10 +286,6 @@ plt.savefig("4-wavefunction.png")
 plt.clf()
 
 # calculate ground state energy
-# update copy of wavefunction with limit values
-wavefctn = u_0.copy()
-wavefctn = np.insert(wavefctn, 0, 0.0)  # insert 0.0 at beginning
-wavefctn = np.append(wavefctn, 0.0)  # ... and 0.0 at end
 energy = eigvals[index_min]          # first term is 2*epsilon = eigenvalue of the solution above
 # get densities - same as above
 n_densities = []
@@ -292,6 +294,19 @@ for j in range(0, len(wavefctn)-1):
 n_densities.append(0.0)
 # add the Vh term to the energy
 Vh_term = 0
+'''
+# get Vh
+b = np.zeros(len(wavefctn))                  # initialize b
+for i in range(len(b)-2):               # calculate b, see eq.45
+    b[i] = (h / 6) * (wavefctn[i] + 4 * wavefctn[i + 1] + wavefctn[i + 2])
+# append approximations at the end where u_0 is approximately zero
+b[-2] = (h / 6) * (wavefctn[-2] + 4 * wavefctn[-1])
+b[-1] = (h / 6) * wavefctn[-1]
+A_inv = np.linalg.inv(A)                # invert A
+Vh = np.dot(A_inv, b[1:-1])             # solve Poisson equation
+Vh = Vh + np.divide(r[1:-1], r_max)     # calculate corresponding wavefunction for single orbital
+Vh = np.divide(Vh, r[1:-1])             # get Hartree potential
+'''
 for j in range(len(n_densities[1:-1])):
     term = h * n_densities[j] * Vh[j]
     Vh_term += term
@@ -350,6 +365,10 @@ for j in range(len(n_densities)):
 energy += Vxc_term
 print('---TASK 4 OUTPUT---')
 print('Ground state energy of Helium:',energy)
+# printouts for debugging
+#print('Vh term:',-0.5*Vh_term)
+#print('Exc term:',Exc_term)
+#print('Vxc term:',Vxc_term)
 
 '''
 # calculate energies
