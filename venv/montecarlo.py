@@ -14,7 +14,7 @@ def uniform(N):
     f2 = (1 / (1 + x ** 3)) ** 2
     I_N = np.sum(f) / N
     variance = np.sum(f2) / N - I_N ** 2
-    error = np.sqrt(variance / N)
+    error = np.sqrt(variance)
     print('N=', N, ': \tI_N=', I_N, ', error=', error)
 print('--UNIFORM DISTRIBUTION--')
 uniform(10)
@@ -31,7 +31,7 @@ def linear(N, a=1.0, b=0.5):
     f2 = (1 / (1 + x ** 3)) ** 2
     I_N = np.sum(f) / N
     variance = np.sum(f2) / N - I_N ** 2
-    error = np.sqrt(variance / N)
+    error = np.sqrt(variance)
     print('N=', N, ': \tI_N=', I_N, ', error=', error)
 print('--LINEAR DISTRIBUTION--')
 linear(10)

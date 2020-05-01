@@ -5,6 +5,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/venv/4-wavefunction.png" beforeDir="false" afterPath="$PROJECT_DIR$/venv/4-wavefunction.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/venv/FEM.py" beforeDir="false" afterPath="$PROJECT_DIR$/venv/FEM.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/venv/montecarlo.py" beforeDir="false" afterPath="$PROJECT_DIR$/venv/montecarlo.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,8 +18,20 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/venv/FEM.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="223">
-              <caret line="181" column="38" selection-start-line="181" selection-start-column="38" selection-end-line="181" selection-end-column="38" />
+            <state relative-caret-position="136">
+              <caret line="268" lean-forward="true" selection-start-line="268" selection-end-line="268" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/venv/montecarlo.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="332">
+              <caret line="97" selection-start-line="97" selection-end-line="97" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -50,17 +63,16 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/venv/Scripts/montecarlo.py" />
-        <option value="$PROJECT_DIR$/venv/montecarlo.py" />
         <option value="$PROJECT_DIR$/venv/scrap.py" />
+        <option value="$PROJECT_DIR$/venv/montecarlo.py" />
         <option value="$PROJECT_DIR$/venv/FEM.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="453" />
-    <option name="y" value="45" />
+    <option name="x" value="666" />
     <option name="width" value="1125" />
-    <option name="height" value="1014" />
+    <option name="height" value="972" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -190,12 +202,12 @@
     <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.22575517" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11446741" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49841017" visible="true" weight="0.30195382" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49841017" visible="true" weight="0.30728242" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39964476" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -253,27 +265,27 @@
         </entry>
       </map>
     </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/venv/u-plot.png" />
     <entry file="file://$PROJECT_DIR$/venv/potential.png" />
     <entry file="file://$PROJECT_DIR$/venv/4-heliumwavefunction.png" />
-    <entry file="file://$PROJECT_DIR$/venv/Scripts/montecarlo.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/1-triangular.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/montecarlo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="66">
-          <caret line="67" selection-start-line="67" selection-end-line="67" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Scripts/montecarlo.py" />
+    <entry file="file://$PROJECT_DIR$/venv/1-triangular.png" />
     <entry file="file://$PROJECT_DIR$/venv/3-wavefunction.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -283,20 +295,24 @@
     <entry file="file://$PROJECT_DIR$/venv/1-wavefunction.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/venv/scrap.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="33" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/scrap.py" />
     <entry file="file://$PROJECT_DIR$/venv/4-wavefunction.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/venv/montecarlo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="332">
+          <caret line="97" selection-start-line="97" selection-end-line="97" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/venv/FEM.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="223">
-          <caret line="181" column="38" selection-start-line="181" selection-start-column="38" selection-end-line="181" selection-end-column="38" />
+        <state relative-caret-position="136">
+          <caret line="268" lean-forward="true" selection-start-line="268" selection-end-line="268" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
