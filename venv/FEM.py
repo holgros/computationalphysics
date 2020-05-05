@@ -235,7 +235,6 @@ while not convergence:
     H = np.dot(S_inv, A_plus_Q)          # calculate S^{-1}(A+Q)
     eigvals, eigvecs = np.linalg.eig(H)  # get eigenvalues and eigenvectors
     eigvecs = np.transpose(eigvecs)      # the eig function returns eigenvalues arranged column-wise
-
     '''
     # normalize wavefunctions
     for i in range(len(eigvecs)):
@@ -243,9 +242,8 @@ while not convergence:
         for y in eigvecs[i]:
             term = h * y * y
             sum += term
-        eigvecs[i] /= sum
+        eigvecs[i] /= np.sqrt(sum)
     '''
-
     # get index of minimum energy and reset u_0 as the corresponding wavefunction
     index_min = np.argmin(eigvals)
     u_0 = eigvecs[index_min]
@@ -273,8 +271,8 @@ sum = 0
 for y in wavefctn:
     term = h * y * y
     sum += term
-wavefctn /= sum
-print('sum:',sum)
+wavefctn /= np.sqrt(sum)
+#print('sum:',sum)
 '''
 
 # plot wavefunction
