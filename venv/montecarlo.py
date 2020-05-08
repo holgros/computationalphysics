@@ -2,7 +2,7 @@ import numpy as np
 import random
 from matplotlib import pyplot as plt
 
-test_mode = True
+test_mode = False
 
 '''
 TASK 1
@@ -89,16 +89,6 @@ metropolis_task1(10)
 metropolis_task1(100)
 metropolis_task1(1000)
 metropolis_task1(10000)
-
-'''
-bins = [0.1 * i for i in range(12)]
-sample = [random.uniform(0,2/a+b) for i in range(25000)]    # not quite sure about 2/a+b, got there by trial and error
-for i in range(len(sample)):
-    sample[i] = (np.sqrt(b**2+a*sample[i])-b)/a             # inverse of primitive fctn of ax+b
-plt.hist(sample, bins)
-plt.savefig("1-triangulardistribution.png")
-plt.clf()
-'''
 
 '''
 TASK 2
@@ -314,55 +304,19 @@ for i in range(len(conditional_r_2)):
                 break
             break
         break
-# TODO: calculate g=n_2/(max_freq*cube_2)
-
-
-print(max_pos)
-print(max_freq)
-
-
-'''
-for i in range(N):
-    #print(r_1[i])
-    for x in range(nbr_steps):
-        if not (x == nbr_steps-1 or (steps[x] < r_1[i][0] and steps[x+1] >= r_1[i][0])):
-            continue
-        for y in range(nbr_steps):
-            if not (y == nbr_steps - 1 or (steps[y] < r_1[i][1] and steps[y + 1] >= r_1[i][1])):
-                continue
-            for z in range(nbr_steps):
-                if not (z == nbr_steps - 1 or (steps[z] < r_1[i][2] and steps[z + 1] >= r_1[i][2])):
-                    continue
-                cube_1[x][y][z] += 1
-                #print(x,' ',y,' ',z)
-                break
-            break
-        break
-cube_2 = np.zeros((nbr_steps,nbr_steps,nbr_steps))
-for i in range(N):
-    #print(r_2[i])
-    for x in range(nbr_steps):
-        if not (x == nbr_steps-1 or (steps[x] < r_2[i][0] and steps[x+1] >= r_2[i][0])):
-            continue
-        for y in range(nbr_steps):
-            if not (y == nbr_steps - 1 or (steps[y] < r_2[i][1] and steps[y + 1] >= r_2[i][1])):
-                continue
-            for z in range(nbr_steps):
-                if not (z == nbr_steps - 1 or (steps[z] < r_2[i][2] and steps[z + 1] >= r_2[i][2])):
-                    continue
-                cube_2[x][y][z] += 1
-                #print(x,' ',y,' ',z)
-                break
-            break
-        break
-'''
-
-'''
-bins = [0.1 * i for i in range(12)]
-sample = [random.uniform(0,2/a+b) for i in range(25000)]    # not quite sure about 2/a+b, got there by trial and error
-for i in range(len(sample)):
-    sample[i] = (np.sqrt(b**2+a*sample[i])-b)/a             # inverse of primitive fctn of ax+b
-plt.hist(sample, bins)
-plt.savefig("1-triangulardistribution.png")
-plt.clf()
-'''
+# calculate g
+g = np.zeros((nbr_steps,nbr_steps,nbr_steps))
+for x in range(nbr_steps):
+    for y in range(nbr_steps):
+        for z in range(nbr_steps):
+            if cube_2[x][y][z] != 0:
+                g[x][y][z] = n_2[x][y][z]/(max_freq*cube_2[x][y][z])
+            else:
+                g[x][y][z] = 0
+# roll-up the z dimension for visualization
+g_twodim = np.zeros((nbr_steps,nbr_steps))
+for x in range(nbr_steps):
+    for y in range(nbr_steps):
+        for z in range(nbr_steps):
+            g_twodim[x][y] += g[x][y][z]
+# TODO: visualize g??
