@@ -2,7 +2,7 @@ import numpy as np
 import random
 from matplotlib import pyplot as plt
 
-test_mode = False
+test_mode = True
 
 '''
 TASK 1
@@ -16,25 +16,31 @@ def uniform(N):
     f2 = (1 / (1 + x ** 3)) ** 2
     I_N = np.sum(f) / N
     variance = np.sum(f2) / N - I_N ** 2
-    error = np.sqrt(variance)
+    sigma = np.sqrt(variance)
+    error = sigma/np.sqrt(N)
     print('N=', N, ': \tI_N=', I_N, ', error=', error)
-print('---TASK 2 OUTPUT---')
+print('---TASK 1 OUTPUT---')
 print('--UNIFORM DISTRIBUTION--')
 uniform(10)
 uniform(100)
 uniform(1000)
 uniform(10000)
 
-def linear(N, a=1.0, b=0.5):
-    sample = [random.uniform(0, np.sqrt((2*a+b)/b)-b) for i in range(N)]    # not quite sure about np.sqrt((2*a+b)/b)-b, got there by trial and error
+def linear(N, a=-0.5, b=1.25):
+    #sample = [random.uniform(0, np.sqrt((2*a+b)/b)-b) for i in range(N)]    # not quite sure about np.sqrt((2*a+b)/b)-b, got there by trial and error
+    sample = [random.uniform(0, 1) for i in range(N)]
     for i in range(len(sample)):
-        sample[i] = (np.sqrt(b ** 2 + a * sample[i]) - b) / a               # inverse of primitive fctn of ax+b
+        # xs=-b/a - sqrt(2/a*rand(1,N) + (b/a)^2 )
+        #sample[i] = (np.sqrt(b ** 2 + a * sample[i]) - b) / a               # inverse of primitive fctn of ax+b
+        sample[i] = -b/a-np.sqrt(2/a*sample[i]+(b/a)**2)
     x = np.asarray(sample)
     f = 1 / (1 + x ** 3)
-    f2 = (1 / (1 + x ** 3)) ** 2
+    f = f/(a*x+b)
+    f2 = f*f
     I_N = np.sum(f) / N
     variance = np.sum(f2) / N - I_N ** 2
-    error = np.sqrt(variance)
+    sigma = np.sqrt(variance)
+    error = sigma/np.sqrt(N)
     print('N=', N, ': \tI_N=', I_N, ', error=', error)
 print('--LINEAR DISTRIBUTION--')
 linear(10)
@@ -42,16 +48,21 @@ linear(100)
 linear(1000)
 linear(10000)
 
-def metropolis_task1(N, a=1.0, b=0.5):
+def metropolis_task1(N, a=-0.5, b=1.25):
     sample = []
-    x_i = random.uniform(0, 1)
+    x_i = random.uniform(0, 1)  # initial state
     sample.append(x_i)
-    # half is to be accepted: delta=4*(1-x_i) if x_i>2/3, delta=2-x_i otherwise
-    delta = 2-x_i               # see above
+    nbr_accepts = 0
+    nbr_rejects = 0
+    delta = 1.9
     # populate sample
     while len(sample) < N:
-        if x_i > 2/3:
-            delta = 4*(1-x_i)   # see above
+        nbr_rejects += 1
+        '''
+        delta = np.sqrt(8*(a*x_i+b)*(1-x_i)/a)              # choose delta such that half is to be accepted
+        if x_i < delta/2:
+            delta = (a*x_i**2+2*b*x_i-2*x_i+2)/(a*x_i+b)    # see above
+        '''
         # generate trial change
         r = random.uniform(0,1)
         x_j = x_i+delta*(r-0.5)
@@ -60,14 +71,20 @@ def metropolis_task1(N, a=1.0, b=0.5):
             sample.append(x_i)                                      # NOT SURE??
             continue
         r = random.uniform(0,1)
-        if r < (a*x_j+b)/(a*x_i+b): # note that this entails x_j > x_i
+        if r < (a*x_j+b)/(a*x_i+b): # note that this entails x_j < x_i
             x_i = x_j
+            nbr_rejects -= 1
+            nbr_accepts += 1
         sample.append(x_i)                                          # NOT SURE ABOUT ADDING OLD VALUE AGAIN??
-        delta = 2-x_i
     # calculate integral
     x = np.asarray(sample)
     f = 1 / (1 + x ** 3)
+    f = f/(a*x+b)
     I_N = np.sum(f) / N
+    # calculate standard error
+    f2 = f*f
+    variance = np.sum(f2) / N - I_N ** 2
+    sigma = np.sqrt(variance)
     # calculate autocorrelation
     k = -1
     psi_k = 1                           # arbitrary value larger than 0.1
@@ -82,8 +99,11 @@ def metropolis_task1(N, a=1.0, b=0.5):
         g_mean = np.mean(g)
         g_square_mean = np.mean(g*g)
         psi_k = (corr_mean-g_mean*g_mean)/(g_square_mean-g_mean*g_mean)
+    error = sigma/np.sqrt(N/k)
     # print results
-    print('N=', N, ': \tI_N=', I_N, ', psi_k=', psi_k, 'for k=', k)
+    acceptance_rate = nbr_accepts/(nbr_accepts+nbr_rejects)
+    print('N=', N, ': \tI_N=', I_N, '\terror=', error, '\tpsi_k=', psi_k, 'for k=', k, '\tacceptance_rate=',acceptance_rate)
+    #print('nbr_accepts:',nbr_accepts,'\tnbr_rejects:',nbr_rejects)
 print('--METROPOLIS--')
 metropolis_task1(10)
 metropolis_task1(100)
@@ -169,7 +189,8 @@ def metropolis_task2(alpha, sample):
     normalization_factor = np.sum(psi_2)/N
     rho = psi_2/normalization_factor             # NOT SURE HOW THIS AFFECTS THE CORRELATION??
     E_L = np.asarray(E_L)
-    I_N = np.sum(E_L*rho)/N
+    #I_N = np.sum(E_L*rho)/N                    # SHOULD DIVIDE INTEGRAND WITH WEIGHT FUNCTION??
+    I_N = np.sum(E_L) / N
     # calculate autocorrelation
     psi_array = []      # append to output
     k = -1
@@ -192,15 +213,15 @@ def metropolis_task2(alpha, sample):
     return I_N, psi_array
 
 # main process
-delta = 0.5                     # NOT SURE??
+delta = 1.9                     # NOT SURE??
 xyz_max = 5                     # NOT SURE??
 alphas = (0.100, 0.125, 0.150)
 N=100000
 N_eq=10000
 M = 10
 if test_mode:
-    N=1000
     M = 1
+    alphas = [0.125]
 
 # perform calculations M times for each value of alpha
 output = []
@@ -319,4 +340,12 @@ for x in range(nbr_steps):
     for y in range(nbr_steps):
         for z in range(nbr_steps):
             g_twodim[x][y] += g[x][y][z]
-# TODO: visualize g??
+# visualize g
+from mpl_toolkits import mplot3d
+x = np.outer(np.linspace(-xyz_max, xyz_max, int(2*xyz_max/h)), np.ones(int(2*xyz_max/h)))
+y = x.copy().T # transpose
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.plot_surface(x, y, g_twodim,cmap='viridis', edgecolor='none')
+ax.set_title('Helium atom distribution')
+plt.savefig("3-Helium-atom-distribution.png")
