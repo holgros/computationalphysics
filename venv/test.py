@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+import montecarlo as mc
 
 # Fixing random state for reproducibility
 np.random.seed(19680801)
@@ -73,7 +74,10 @@ print(test)
 
 #  if x_i>2/3, delta=2-x_i otherwise
 # delta = np.sqrt(8*(a*x_i+b)*(1-x_i)/a)  # choose delta such that half is to be accepted
-
+'''
 if x_i < delta / 2:
     # delta = (a*x_i**2+2*b*x_i-2*x_i+2)/(a*x_i+b)
     pass
+'''
+x = mc.psi(0.125, np.asarray([0,0,3]),np.asarray([0,0,0]))
+print(x)

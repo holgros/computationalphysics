@@ -2,12 +2,12 @@ import numpy as np
 import random
 from matplotlib import pyplot as plt
 
-test_mode = True
+test_mode = False
 
 '''
 TASK 1
 '''
-print('Starting task 1')
+# main process begins after function definitions
 
 def uniform(N):
     sample = [random.uniform(0, 1) for i in range(N)]
@@ -19,12 +19,6 @@ def uniform(N):
     sigma = np.sqrt(variance)
     error = sigma/np.sqrt(N)
     print('N=', N, ': \tI_N=', I_N, ', error=', error)
-print('---TASK 1 OUTPUT---')
-print('--UNIFORM DISTRIBUTION--')
-uniform(10)
-uniform(100)
-uniform(1000)
-uniform(10000)
 
 def linear(N, a=-0.5, b=1.25):
     #sample = [random.uniform(0, np.sqrt((2*a+b)/b)-b) for i in range(N)]    # not quite sure about np.sqrt((2*a+b)/b)-b, got there by trial and error
@@ -42,11 +36,6 @@ def linear(N, a=-0.5, b=1.25):
     sigma = np.sqrt(variance)
     error = sigma/np.sqrt(N)
     print('N=', N, ': \tI_N=', I_N, ', error=', error)
-print('--LINEAR DISTRIBUTION--')
-linear(10)
-linear(100)
-linear(1000)
-linear(10000)
 
 def metropolis_task1(N, a=-0.5, b=1.25):
     sample = []
@@ -104,16 +93,32 @@ def metropolis_task1(N, a=-0.5, b=1.25):
     acceptance_rate = nbr_accepts/(nbr_accepts+nbr_rejects)
     print('N=', N, ': \tI_N=', I_N, '\terror=', error, '\tpsi_k=', psi_k, 'for k=', k, '\tacceptance_rate=',acceptance_rate)
     #print('nbr_accepts:',nbr_accepts,'\tnbr_rejects:',nbr_rejects)
-print('--METROPOLIS--')
-metropolis_task1(10)
-metropolis_task1(100)
-metropolis_task1(1000)
-metropolis_task1(10000)
+
+# MAIN PROCESS
+if __name__ == '__main__':
+    print('Starting task 1')
+    print('---TASK 1 OUTPUT---')
+    print('--UNIFORM DISTRIBUTION--')
+    uniform(10)
+    uniform(100)
+    uniform(1000)
+    uniform(10000)
+    print('--LINEAR DISTRIBUTION--')
+    linear(10)
+    linear(100)
+    linear(1000)
+    linear(10000)
+    print('--METROPOLIS--')
+    metropolis_task1(10)
+    metropolis_task1(100)
+    metropolis_task1(1000)
+    metropolis_task1(10000)
 
 '''
 TASK 2
 '''
 print('Starting task 2')
+# main process begins after function definitions
 
 # the wave function - input consists of two vectors in cartesian coordinates and a value of alpha
 def psi(alpha, vec_1, vec_2=None):
@@ -131,12 +136,17 @@ def get_samples(alpha, N=100000, N_eq=10000):
     for i in range(6):
         first_sample[i%2][i%3] = random.uniform(-xyz_max, xyz_max)
     #x_i = np.array([random.uniform(-xyz_max, xyz_max),random.uniform(-xyz_max, xyz_max),random.uniform(-xyz_max, xyz_max)])
-    x_i = sample(alpha, first_sample, N_eq)[-1]       # sample N_eq times first
+    samples, acceptance_rate = sample(alpha, first_sample, N_eq)       # sample N_eq times first
+    x_i = samples[-1]
     return sample(alpha, x_i, N)
 def sample(alpha, starting_points, nbr_samples):
+    # alpha = corresponding parameter in trial wave function
+    # starting_points = a pair of coordinate triples ((x1,y1,z1),(x2,y2,z2)) corresponding to the initial positions
+    # nbr_samples = number of items to be returned; each item is a pair of coordinate triples
     out = []
     dim = 0  # x, y or z dimension
     out.append(starting_points)
+    nbr_accepted = 0
     while len(out) < nbr_samples:
         r = random.uniform(-xyz_max, xyz_max)
         next_coordinate = starting_points[dim%2][dim%3] + delta * (r - 0.5)
@@ -153,11 +163,13 @@ def sample(alpha, starting_points, nbr_samples):
         r = random.uniform(0, 1)
         if r < prob:  # note that this entails 1 < prob
             starting_points = next_points
+            nbr_accepted += 1
         out.append(starting_points)                      # NOT SURE ABOUT ACCEPTING OLD VALUE AGAIN??
         # alternate between x, y and z dimensions for two points
         dim += 1
         dim %= 6
-    return out
+    acceptance_rate = nbr_accepted/nbr_samples
+    return out, acceptance_rate
 
 # local energy - input same as for wavefunction
 def local_energy(alpha, positions):
@@ -165,19 +177,19 @@ def local_energy(alpha, positions):
     vec_2 = positions[1]
     r_1 = np.linalg.norm(vec_1)
     r_2 = np.linalg.norm(vec_2)
-    r_12 = np.linalg.norm(vec_2-vec_1)
+    r_12 = np.linalg.norm(vec_1-vec_2)
     r_1_hat = vec_1/r_1
     r_2_hat = vec_2/r_2
-    r_12_hat = (vec_2-vec_1)/r_12
+    r_12_hat = (vec_1-vec_2)/r_12
     term_1 = -4
-    term_2 = np.dot(r_1_hat-r_2_hat, r_12_hat)/(1+alpha*r_12)**2
+    term_2 = np.dot(r_1_hat-r_2_hat, r_12_hat)/((1+alpha*r_12)**2)
     term_3 = alpha/(1+alpha*r_12)
-    term_4 = alpha/(1+alpha*r_12)**2
-    term_5 = alpha/(1+alpha*r_12)**3
-    term_6 = -1/(4*(1+alpha*r_12)**4)
+    term_4 = alpha/((1+alpha*r_12)**2)
+    term_5 = alpha/((1+alpha*r_12)**3)
+    term_6 = -1/(4*((1+alpha*r_12)**4))
     return term_1+term_2+term_3+term_4+term_5+term_6
 
-def metropolis_task2(alpha, sample):
+def calculate_integral(alpha, sample):
     N = len(sample)
     # calculate integral
     psi_2 = []
@@ -190,6 +202,9 @@ def metropolis_task2(alpha, sample):
     rho = psi_2/normalization_factor             # NOT SURE HOW THIS AFFECTS THE CORRELATION??
     E_L = np.asarray(E_L)
     #I_N = np.sum(E_L*rho)/N                    # SHOULD DIVIDE INTEGRAND WITH WEIGHT FUNCTION??
+    for i in range(len(E_L)):
+        #print(E_L[i])
+        pass
     I_N = np.sum(E_L) / N
     # calculate autocorrelation
     psi_array = []      # append to output
@@ -198,8 +213,8 @@ def metropolis_task2(alpha, sample):
     while np.abs(psi_k) > 0.1 and k < N - 1:  # np.abs really needed??
         k += 1
         corr = []
-        # g = f/w = (E_L*rho)/rho = E_L
-        g = E_L
+        # g = f/w = ((E_L*rho)/rho)/rho = E_L/rho
+        g = E_L/rho
         x = sample
         # same as above
         for i in range(len(x) - k):
@@ -209,44 +224,68 @@ def metropolis_task2(alpha, sample):
         g_square_mean = np.mean(g * g)
         psi_k = (corr_mean - g_mean * g_mean) / (g_square_mean - g_mean * g_mean)
         psi_array.append(psi_k)       # append to output
-    # print results
-    return I_N, psi_array
+    # calculate variance
+    variance = np.sum(E_L*E_L) / N - I_N ** 2
+    sigma = np.sqrt(variance)
+    error = sigma/np.sqrt(N/len(psi_array))
+    # return results
+    return I_N, psi_array, E_L
 
-# main process
-delta = 1.9                     # NOT SURE??
-xyz_max = 5                     # NOT SURE??
-alphas = (0.100, 0.125, 0.150)
-N=100000
-N_eq=10000
-M = 10
-if test_mode:
-    M = 1
-    alphas = [0.125]
+# MAIN PROCESS
+if __name__ == '__main__':
+    # main process
+    delta = 0.3                     # got this value by trial and error, but doesn't appear to affect the result much
+    xyz_max = 5                     # at this distance from the origin, probabilities are very small
+    alphas = (0.100, 0.125, 0.150)
+    N=100000
+    N_eq=10000
+    M = 10
+    if test_mode:
+        M = 1
+        alphas = [0.125]
 
-# perform calculations M times for each value of alpha
-output = []
-for i in range(len(alphas)):
-    print('Working with alpha=',alphas[i])      # track progress
-    all_samples = []
-    integral_results = []
-    correlation_results = []
-    for j in range(M):
-        sample_array = get_samples(alphas[i], N, N_eq)
-        all_samples.append(sample_array)
-        I_N, psi_array = metropolis_task2(alphas[i], sample_array)
-        integral_results.append(I_N)
-        correlation_results.append(psi_array)
-        print('\tCompleted M=',j)
-    output.append((all_samples, integral_results, correlation_results))
+    # perform calculations M times for each value of alpha
+    output = []
+    for i in range(len(alphas)):
+        print('Working with alpha=',alphas[i])      # track progress
+        all_samples = []
+        integral_results = []
+        k = []
+        local_energies = []
+        errors = []
+        for j in range(M):
+            sample_array, acceptance_rate = get_samples(alphas[i], N, N_eq)
+            all_samples.append(sample_array)
+            I_N, psi_array, E_L = calculate_integral(alphas[i], sample_array)
+            integral_results.append(I_N)
+            local_energies.append(E_L)
+            k.append(len(psi_array))
+            variance = np.sum(E_L * E_L) / N - np.mean(E_L) ** 2
+            sigma = np.sqrt(variance)
+            errors.append(sigma / np.sqrt(N / len(psi_array)))
+            print('\tCompleted M=',j,'\tacceptance_rate:', acceptance_rate)
+            if (test_mode):
+                for i in range(len(sample_array)):
+                    #print(sample_array[i])
+                    pass
+        '''
+        # calculate error
+        local_energies = np.asarray(local_energies)
+        variance = np.sum(local_energies * local_energies) / (N*M) - np.mean(local_energies) ** 2
+        sigma = np.sqrt(variance)
+        error = sigma / np.sqrt(N*M / np.sum(k))          # NOT SURE ABOUT THE LAST DENOMINATOR??
+        '''
+        # output results for this value of alpha
+        output.append((all_samples, integral_results, k, errors))
 
-print('---TASK 2 OUTPUT---')
-print('Mean values for I_N:')
-for i in range(len(alphas)):
-    print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]))
+    print('---TASK 2 OUTPUT---')
+    print('Mean values for I_N:')
+    for i in range(len(alphas)):
+        print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]),'\t\terror=',np.sum(output[i][3]))
 
 '''
 TASK 3
-'''
+
 print('Starting task 3')
 
 # parameter to set discretization steps for the distribution functions
@@ -349,3 +388,4 @@ ax = plt.axes(projection='3d')
 ax.plot_surface(x, y, g_twodim,cmap='viridis', edgecolor='none')
 ax.set_title('Helium atom distribution')
 plt.savefig("3-Helium-atom-distribution.png")
+'''

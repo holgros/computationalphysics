@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11f8e62a-4ad9-46b7-b689-a693c3fcb908" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/venv/3-Helium-atom-distribution.png" beforeDir="false" afterPath="$PROJECT_DIR$/venv/3-Helium-atom-distribution.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/venv/montecarlo.py" beforeDir="false" afterPath="$PROJECT_DIR$/venv/montecarlo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/venv/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/venv/test.py" afterDir="false" />
     </list>
@@ -17,20 +17,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/venv/montecarlo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="32" column="50" selection-start-line="32" selection-start-column="13" selection-end-line="32" selection-end-column="50" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/venv/FEM.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1156">
-              <caret line="69" selection-start-line="68" selection-end-line="69" />
+            <state relative-caret-position="425">
+              <caret line="283" column="103" lean-forward="true" selection-start-line="283" selection-start-column="103" selection-end-line="283" selection-end-column="103" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -41,8 +29,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/venv/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1224">
-              <caret line="74" column="89" selection-start-line="74" selection-start-column="2" selection-end-line="74" selection-end-column="89" />
+            <state relative-caret-position="211">
+              <caret line="81" column="35" selection-start-line="81" selection-start-column="35" selection-end-line="81" selection-end-column="35" />
+              <folding>
+                <element signature="e#1#32#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -238,14 +229,14 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49841017" weight="0.3232682" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49761525" visible="true" weight="0.3232682" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39964476" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3285968" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.3285968" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.3285968" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50158983" side_tool="true" weight="0.3285968" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5023847" side_tool="true" weight="0.3232682" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.3285968" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -337,19 +328,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/venv/3-Helium-atom-distribution.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/venv/montecarlo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="32" column="50" selection-start-line="32" selection-start-column="13" selection-end-line="32" selection-end-column="50" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/venv/FEM.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1156">
@@ -360,10 +338,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/venv/3-Helium-atom-distribution.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/venv/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1224">
-          <caret line="74" column="89" selection-start-line="74" selection-start-column="2" selection-end-line="74" selection-end-column="89" />
+        <state relative-caret-position="211">
+          <caret line="81" column="35" selection-start-line="81" selection-start-column="35" selection-end-line="81" selection-end-column="35" />
+          <folding>
+            <element signature="e#1#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/montecarlo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="283" column="103" lean-forward="true" selection-start-line="283" selection-start-column="103" selection-end-line="283" selection-end-column="103" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
