@@ -131,15 +131,15 @@ def psi(alpha, vec_1, vec_2=None):
     return np.exp(-2*r_1)*np.exp(-2*r_2)*np.exp(r_12/(2*(1+alpha*r_12)))
 
 # get samples for monte carlo integration
-def get_samples(alpha, N=100000, N_eq=10000):
+def get_samples_task2(alpha, N=100000, N_eq=10000):
     first_sample = [np.zeros(3), np.zeros(3)]
     for i in range(6):
         first_sample[i%2][i%3] = random.uniform(-xyz_max, xyz_max)
     #x_i = np.array([random.uniform(-xyz_max, xyz_max),random.uniform(-xyz_max, xyz_max),random.uniform(-xyz_max, xyz_max)])
-    samples, acceptance_rate = sample(alpha, first_sample, N_eq)       # sample N_eq times first
+    samples, acceptance_rate = sample_task2(alpha, first_sample, N_eq)       # sample N_eq times first
     x_i = samples[-1]
-    return sample(alpha, x_i, N)
-def sample(alpha, starting_points, nbr_samples):
+    return sample_task2(alpha, x_i, N)
+def sample_task2(alpha, starting_points, nbr_samples):
     # alpha = corresponding parameter in trial wave function
     # starting_points = a pair of coordinate triples ((x1,y1,z1),(x2,y2,z2)) corresponding to the initial positions
     # nbr_samples = number of items to be returned; each item is a pair of coordinate triples
@@ -229,20 +229,20 @@ def calculate_integral(alpha, sample):
     sigma = np.sqrt(variance)
     error = sigma/np.sqrt(N/len(psi_array))
     # return results
-    return I_N, psi_array, E_L
+    return I_N, psi_array, E_L, rho
 
+
+delta = 0.3  # got this value by trial and error, but doesn't appear to affect the result much
+xyz_max = 3.0  # at this distance from the origin, probabilities are very small
+alphas = [0.125]
+N = 100000
+N_eq = 10000
+M = 1
 # MAIN PROCESS
-if __name__ == '__main__':
+if test_mode == False:
     # main process
-    delta = 0.3                     # got this value by trial and error, but doesn't appear to affect the result much
-    xyz_max = 5                     # at this distance from the origin, probabilities are very small
-    alphas = (0.100, 0.125, 0.150)
-    N=100000
-    N_eq=10000
     M = 10
-    if test_mode:
-        M = 1
-        alphas = [0.125]
+    alphas = (0.1, 0.12, 0.125, 0.13, 0.14)
 
     # perform calculations M times for each value of alpha
     output = []
@@ -253,21 +253,20 @@ if __name__ == '__main__':
         k = []
         local_energies = []
         errors = []
+        rho = []
         for j in range(M):
-            sample_array, acceptance_rate = get_samples(alphas[i], N, N_eq)
+            sample_array, acceptance_rate = get_samples_task2(alphas[i], N, N_eq)
             all_samples.append(sample_array)
-            I_N, psi_array, E_L = calculate_integral(alphas[i], sample_array)
+            I_N, psi_array, E_L, rho_temp = calculate_integral(alphas[i], sample_array)
             integral_results.append(I_N)
             local_energies.append(E_L)
             k.append(len(psi_array))
+            rho.append(rho_temp)
             variance = np.sum(E_L * E_L) / N - np.mean(E_L) ** 2
             sigma = np.sqrt(variance)
             errors.append(sigma / np.sqrt(N / len(psi_array)))
             print('\tCompleted M=',j,'\tacceptance_rate:', acceptance_rate)
-            if (test_mode):
-                for i in range(len(sample_array)):
-                    #print(sample_array[i])
-                    pass
+
         '''
         # calculate error
         local_energies = np.asarray(local_energies)
@@ -275,117 +274,150 @@ if __name__ == '__main__':
         sigma = np.sqrt(variance)
         error = sigma / np.sqrt(N*M / np.sum(k))          # NOT SURE ABOUT THE LAST DENOMINATOR??
         '''
+        local_energies[i] = np.asarray(local_energies[i])
+        rho[i] = np.asarray(rho[i])
+        k_value = -1
+        psi_k = 1  # arbitrary value larger than 0.1
+        # g = f/w = ((E_L*rho)/rho)/rho = E_L/rho
+        g = local_energies[i] / rho[i]
+        while np.abs(psi_k) > 0.1 and k_value < N*M - 1:  # np.abs really needed??
+            k_value += 1
+            corr = []
+            # same as above
+            for l in range(len(g) - k_value):
+                corr.append(g[l] * g[l + k_value])
+            corr_mean = np.mean(corr)
+            g_mean = np.mean(g)
+            g_square_mean = np.mean(g * g)
+            if (len(corr) == 0):
+                print('psi_k=',psi_k,'\tk_value=',k_value)
+            psi_k = (corr_mean - g_mean * g_mean) / (g_square_mean - g_mean * g_mean)
+        variance = np.sum(local_energies[i] * local_energies[i]) / N - np.mean(local_energies[i]) ** 2
+        sigma = np.sqrt(variance)
+        calc_error = sigma / np.sqrt(N*M / k_value)
         # output results for this value of alpha
-        output.append((all_samples, integral_results, k, errors))
+        output.append((all_samples, integral_results, k, errors, calc_error))
 
     print('---TASK 2 OUTPUT---')
     print('Mean values for I_N:')
     for i in range(len(alphas)):
-        print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]),'\t\terror=',np.sum(output[i][3]))
+        #print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]),'\t\terror=',np.sum(output[i][3]))
+        print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]),'\t\terror=',output[i][4])
 
 '''
 TASK 3
-
+'''
 print('Starting task 3')
 
-# parameter to set discretization steps for the distribution functions
-h = 0.1
-if test_mode:
-    h=1
-steps = np.arange(-xyz_max, xyz_max, h)
-# from output of task 2, choose sample for some intermediate value of alpha
-alpha = len(alphas)//2
-X = np.asarray(output[alpha][0][0])                         # NOTE EXTRA DIMENSION NEEDED HERE??
-# calculate rho as above
-psi_2 = []
-for i in range(N):
-    psi_2.append(psi(alpha, X[i])*psi(alpha, X[i]))
-psi_2 = np.asarray(psi_2)
-normalization_factor = np.sum(psi_2)/N
-rho = psi_2/normalization_factor                            # NOT SURE HOW THIS AFFECTS THE CORRELATION??
-# get distributions as one cube for each electron
-r_1 = []
-r_2 = []
-for i in range(N):
-    r_1.append(X[i][0])
-    r_2.append(X[i][1])
-nbr_steps = len(steps)
-cube_1 = np.zeros((nbr_steps,nbr_steps,nbr_steps))
-cube_2 = np.zeros((nbr_steps,nbr_steps,nbr_steps))
-distributions = ((r_1,cube_1),(r_2,cube_2))
-for distr in distributions:
-    r = distr[0]
-    cube = distr[1]
-    for i in range(N):
-        #print(r[i])
-        for x in range(nbr_steps):
-            if not (x == nbr_steps-1 or (steps[x] < r[i][0] and steps[x+1] >= r[i][0])):
-                continue
-            for y in range(nbr_steps):
-                if not (y == nbr_steps - 1 or (steps[y] < r[i][1] and steps[y + 1] >= r[i][1])):
-                    continue
-                for z in range(nbr_steps):
-                    if not (z == nbr_steps - 1 or (steps[z] < r[i][2] and steps[z + 1] >= r[i][2])):
-                        continue
-                    cube[x][y][z] += 1
-                    #print(x,' ',y,' ',z)
-                    break
-                break
-            break
-# identify most frequent position for electron 1
-max_freq = -1
-max_pos = ()
-for x in range(nbr_steps):
-    for y in range(nbr_steps):
-        for z in range(nbr_steps):
-            if cube_1[x][y][z] > max_freq:
-                max_freq = cube_1[x][y][z]
-                max_pos = (x,y,z)
-# build n_2 as a cube of conditional probabilities where the coordinates of the first electron is held fixed at max_pos
-conditional_r_2 = []            # identify all r_2 for which r_1 = max_pos
-for i in range(N):
-    if (steps[max_pos[0]] < r_1[i][0] and steps[max_pos[0] + 1] >= r_1[i][0] and
-            steps[max_pos[1]] < r_1[i][1] and steps[max_pos[1] + 1] >= r_1[i][1] and
-            steps[max_pos[2]] < r_1[i][2] and steps[max_pos[2] + 1] >= r_1[i][2]):
-            conditional_r_2.append(r_2[i])
-n_2 = np.zeros((nbr_steps,nbr_steps,nbr_steps))
-for i in range(len(conditional_r_2)):
-    for x in range(nbr_steps):
-        if not (x == nbr_steps - 1 or (steps[x] < conditional_r_2[i][0] and steps[x + 1] >= conditional_r_2[i][0])):
+# generate samples
+def get_samples_task3(X_1, alpha=0.125, N=100000, N_eq=10000):
+    first_sample = np.zeros(3)
+    first_sample[0] = random.uniform(-xyz_max, xyz_max)
+    first_sample[1] = random.uniform(-xyz_max, xyz_max)
+    first_sample[2] = random.uniform(-xyz_max, xyz_max)
+    samples, acceptance_rate = sample_task3(alpha, X_1, first_sample, N_eq)       # sample N_eq times first
+    x_i = samples[-1]
+    return sample_task3(alpha, X_1, x_i, N)
+def sample_task3(alpha, X_1, starting_point, nbr_samples):
+    # alpha = corresponding parameter in trial wave function
+    # starting_point = a coordinate triple (x2,y2,z2) corresponding to the initial position
+    # nbr_samples = number of items to be returned; each item is a coordinate triple
+    out = []
+    dim = 0  # x or y dimension
+    out.append(starting_point)
+    nbr_accepted = 0
+    while len(out) < nbr_samples:
+        r = random.uniform(-xyz_max, xyz_max)
+        next_coordinate = starting_point[dim] + delta * (r - 0.5)
+        if next_coordinate < -xyz_max or next_coordinate > xyz_max:
+            out.append(starting_point)                  # NOT SURE??
             continue
-        for y in range(nbr_steps):
-            if not (y == nbr_steps - 1 or (steps[y] < conditional_r_2[i][1] and steps[y + 1] >= conditional_r_2[i][1])):
-                continue
-            for z in range(nbr_steps):
-                if not (z == nbr_steps - 1 or (steps[z] < conditional_r_2[i][2] and steps[z + 1] >= conditional_r_2[i][2])):
-                    continue
-                n_2[x][y][z] += 1
-                # print(x,' ',y,' ',z)
-                break
-            break
-        break
-# calculate g
-g = np.zeros((nbr_steps,nbr_steps,nbr_steps))
-for x in range(nbr_steps):
-    for y in range(nbr_steps):
-        for z in range(nbr_steps):
-            if cube_2[x][y][z] != 0:
-                g[x][y][z] = n_2[x][y][z]/(max_freq*cube_2[x][y][z])
-            else:
-                g[x][y][z] = 0
-# roll-up the z dimension for visualization
-g_twodim = np.zeros((nbr_steps,nbr_steps))
-for x in range(nbr_steps):
-    for y in range(nbr_steps):
-        for z in range(nbr_steps):
-            g_twodim[x][y] += g[x][y][z]
-# visualize g
-from mpl_toolkits import mplot3d
-x = np.outer(np.linspace(-xyz_max, xyz_max, int(2*xyz_max/h)), np.ones(int(2*xyz_max/h)))
-y = x.copy().T # transpose
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.plot_surface(x, y, g_twodim,cmap='viridis', edgecolor='none')
-ax.set_title('Helium atom distribution')
-plt.savefig("3-Helium-atom-distribution.png")
-'''
+        # create a new point where one coordinate differs from starting point
+        next_point = np.zeros(3)
+        for i in range(3):
+            next_point[i] = starting_point[i]
+        next_point[dim] = next_coordinate
+        # evaluate probability and decide whether to accept the next points
+        prob = (psi(alpha, X_1, next_point)/psi(alpha, X_1, starting_point))**2
+        r = random.uniform(0, 1)
+        if r < prob:  # note that this entails 1 < prob
+            starting_point = next_point
+            nbr_accepted += 1
+        out.append(starting_point)                      # NOT SURE ABOUT ACCEPTING OLD VALUE AGAIN??
+        # alternate between x, y and z dimensions
+        dim += 1
+        dim %= 3
+    acceptance_rate = nbr_accepted/nbr_samples
+    return out, acceptance_rate
+
+# get bin index of a value
+def get_bin_index(num, bin):
+    i = 0
+    while bin[i] < num:
+        i += 1
+    return i-1
+
+# divide two square arrays element-wise, set zero where denominator is zero
+def divide_ignore_zeros(array1, array2):
+    size = len(array1)      # assumed to equal length of array 2, as well as column length
+    out = np.zeros((size, size))
+    for i in range(size):
+        for j in range(size):
+            if array2[i][j] != 0:
+                out[i][j] = array1[i][j]/array2[i][j]
+    return out
+
+# main process
+steps = 300
+alpha = 0.125
+N = steps**2
+steprange = np.arange(-xyz_max, xyz_max, 2*xyz_max/steps)
+
+# first get unconditional probability distributions
+sample_array, acceptance_rate = get_samples_task2(alpha, N, 10000)
+print('acceptance_rate (unconditional):', acceptance_rate)
+#print('sample_array:', sample_array)
+sample_array = np.transpose(sample_array)
+#print('sample_array:', sample_array)
+#print('len(sample_array:', len(sample_array)) # 3*2 arrays: [[x1, x2],[y1,y2],[z1,z2]]
+x1 = sample_array[0][0]
+x2 = sample_array[0][1]
+y1 = sample_array[1][0]
+y2 = sample_array[1][1]
+n_r1 = plt.hist2d(x1, y1, bins=(steprange, steprange), cmap=plt.cm.jet)[0]
+n_r2 = plt.hist2d(x2, y2, bins=(steprange, steprange), cmap=plt.cm.jet)[0]
+
+# now identify conditional probability distributions
+# fix first electron at origin
+X_1 = np.zeros(3)
+X_2_array, acceptance_rate = get_samples_task3(X_1, alpha, N, 10000)
+print('acceptance_rate (symmetric case) =',acceptance_rate)
+X_2_array = np.transpose(X_2_array)
+x = X_2_array[0]
+y = X_2_array[1]
+n_symmetric, x_edges, y_edges, image = plt.hist2d(x, y, bins=(steprange, steprange), cmap=plt.cm.jet)
+g = divide_ignore_zeros(n_symmetric, n_r2)
+index_x = get_bin_index(X_1[0], x_edges)
+index_y = get_bin_index(X_1[1], y_edges)
+g = g/n_r1[index_x][index_y]
+plt.imshow(g, interpolation='nearest')
+plt.colorbar()
+plt.savefig("3-Helium-atom-distribution-symmetric.png")
+
+# repeat process with X_1 = (0.25, 0.25, 0.0)
+X_1[0] = 0.25
+X_1[1] = 0.25
+X_2_array, acceptance_rate = get_samples_task3(X_1, alpha, N, 10000)
+print('acceptance_rate (asymmetric case) =',acceptance_rate)
+X_2_array = np.transpose(X_2_array)
+x = X_2_array[0]
+y = X_2_array[1]
+n_asymmetric, x_edges, y_edges, image = plt.hist2d(x, y, bins=(steprange, steprange), cmap=plt.cm.jet)
+g = divide_ignore_zeros(n_symmetric, n_r2)
+index_x = get_bin_index(X_1[0], x_edges)
+index_y = get_bin_index(X_1[1], y_edges)
+g = g/n_r1[index_x][index_y]
+plt.imshow(g, interpolation='nearest')
+plt.savefig("3-Helium-atom-distribution-asymmetric.png")
+
+
