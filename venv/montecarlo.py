@@ -2,7 +2,7 @@ import numpy as np
 import random
 from matplotlib import pyplot as plt
 
-test_mode = False
+skip_task_2 = True      # task 2 is rather time-consuming, so this variable allows us to skip this part of the program
 
 '''
 TASK 1
@@ -151,7 +151,7 @@ def sample_task2(alpha, starting_points, nbr_samples):
         r = random.uniform(-xyz_max, xyz_max)
         next_coordinate = starting_points[dim%2][dim%3] + delta * (r - 0.5)
         if next_coordinate < -xyz_max or next_coordinate > xyz_max:
-            out.append(starting_points)                  # NOT SURE??
+            out.append(starting_points)
             continue
         # create two new points where one coordinate of one point differs from starting points
         next_points = [np.zeros(3), np.zeros(3)]
@@ -164,7 +164,7 @@ def sample_task2(alpha, starting_points, nbr_samples):
         if r < prob:  # note that this entails 1 < prob
             starting_points = next_points
             nbr_accepted += 1
-        out.append(starting_points)                      # NOT SURE ABOUT ACCEPTING OLD VALUE AGAIN??
+        out.append(starting_points)
         # alternate between x, y and z dimensions for two points
         dim += 1
         dim %= 6
@@ -199,11 +199,10 @@ def calculate_integral(alpha, sample):
         E_L.append(local_energy(alpha, sample[i]))
     psi_2 = np.asarray(psi_2)
     normalization_factor = np.sum(psi_2)/N
-    rho = psi_2/normalization_factor             # NOT SURE HOW THIS AFFECTS THE CORRELATION??
+    rho = psi_2/normalization_factor
     E_L = np.asarray(E_L)
     #I_N = np.sum(E_L*rho)/N                    # SHOULD DIVIDE INTEGRAND WITH WEIGHT FUNCTION??
     for i in range(len(E_L)):
-        #print(E_L[i])
         pass
     I_N = np.sum(E_L) / N
     # calculate autocorrelation
@@ -239,7 +238,7 @@ N = 100000
 N_eq = 10000
 M = 1
 # MAIN PROCESS
-if test_mode == False:
+if skip_task_2 == False:
     # main process
     M = 10
     alphas = (0.1, 0.12, 0.125, 0.13, 0.14)
@@ -266,14 +265,6 @@ if test_mode == False:
             sigma = np.sqrt(variance)
             errors.append(sigma / np.sqrt(N / len(psi_array)))
             print('\tCompleted M=',j,'\tacceptance_rate:', acceptance_rate)
-
-        '''
-        # calculate error
-        local_energies = np.asarray(local_energies)
-        variance = np.sum(local_energies * local_energies) / (N*M) - np.mean(local_energies) ** 2
-        sigma = np.sqrt(variance)
-        error = sigma / np.sqrt(N*M / np.sum(k))          # NOT SURE ABOUT THE LAST DENOMINATOR??
-        '''
         local_energies[i] = np.asarray(local_energies[i])
         rho[i] = np.asarray(rho[i])
         k_value = -1
@@ -301,7 +292,6 @@ if test_mode == False:
     print('---TASK 2 OUTPUT---')
     print('Mean values for I_N:')
     for i in range(len(alphas)):
-        #print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]),'\t\terror=',np.sum(output[i][3]))
         print('alpha=', alphas[i], ':\t\tI_N=',np.mean(output[i][1]),'\t\terror=',output[i][4])
 
 '''
